@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Retaforums</title>
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+<style>
+/* ===== Retaforums — Single file UI (dark breach-like) ===== */
+:root{
+  --bg:#07080b; --panel:#0c0f12; --muted:#98a3ad; --accent:#2ef0c5; --accent-2:#2db2ff;
+  --gold:#ffd166; --danger:#ff6b6b; --card-radius:12px; --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial; color:#e8f9f4;
+  background:
+    radial-gradient(800px 300px at 10% 5%, rgba(46,240,197,0.03), transparent 8%),
+    linear-gradient(180deg,#03060a 0%, #071018 100%);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* HEADER */
+.header{
+  height:56px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 18px; border-bottom:1px solid rgba(255,255,255,0.03);
+  background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#00ffd1,#00b3ff);display:flex;align-items:center;justify-content:center;color:#002;font-weight:900}
+.brand h1{margin:0;font-size:18px;color:var(--accent)}
+.header-controls{display:flex;gap:8px;align-items:center}
+
+/* LAYOUT */
+.main{max-width:1200px;margin:18px auto;display:grid;grid-template-columns:300px 1fr 320px;gap:18px;padding:0 12px}
+@media(max-width:980px){.main{grid-template-columns:1fr}.left{order:2}.center{order:1}.right{order:3}}
+
+/* CARDS */
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:var(--card-radius);padding:14px;border:1px solid rgba(255,255,255,0.02)}
+.small{color:var(--muted);font-size:13px}
+
+/* LEFT SIDEBAR */
+.profile-card{text-align:center}
+#pp{width:110px;height:110px;border-radius:10px;background:#08101a;object-fit:cover;border:2px solid rgba(255,255,255,0.03)}
+.display-name{font-weight:900;margin-top:10px}
+.role-badge{display:inline-block;margin-top:8px;padding:6px 10px;border-radius:999px;background:rgba(46,240,197,0.06);color:var(--accent);font-weight:800}
+.meta-grid{margin-top:12px}
+.meta-grid div{display:flex;justify-content:space-between;padding:8px 0;border-top:1px dashed rgba(255,255,255,0.02);color:var(--muted)}
+
+/* CENTER */
+.thread-hero{display:flex;gap:14px;align-items:center}
+.thread-hero .title{font-size:18px;font-weight:900;color:#dffbf1}
+.thread-hero .meta{color:var(--muted);font-size:13px}
+.code-table{background:#0a0c0e;padding:10px;border-radius:8px;margin-top:10px;border:1px solid rgba(255,255,255,0.02);overflow:auto;font-family:var(--mono);font-size:13px;color:#cfeff0}
+
+/* POST */
+.post{display:flex;gap:12px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.005), transparent);border:1px solid rgba(255,255,255,0.02);margin-top:12px}
+.post .avatar{width:110px;text-align:center;flex-shrink:0}
+.post .avatar img{width:96px;height:96px;border-radius:8px;object-fit:cover;background:#071018}
+.post .content{flex:1}
+.post .meta{font-size:13px;color:var(--muted)}
+.post .actions{margin-top:8px;display:flex;gap:8px;align-items:center}
+.btn{background:linear-gradient(90deg, rgba(46,240,197,0.12), rgba(127,190,255,0.06));border:1px solid rgba(255,255,255,0.03);padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--accent);font-weight:800}
+.btn.ghost{background:transparent;color:var(--muted)}
+.award-btn{background:var(--gold);color:#111;border:0;padding:7px 10px;border-radius:8px;cursor:pointer;font-weight:800}
+
+/* RIGHT */
+.right .card{margin-bottom:12px}
+.search{width:100%;padding:8px;border-radius:8px;border:1px dashed rgba(255,255,255,0.03);background:transparent;color:inherit}
+
+/* SHOP */
+.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.shop-item{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+
+/* MODAL */
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:60}
+.modal .card{max-width:880px;width:92%}
+
+/* FOOTER */
+.footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px;padding-bottom:30px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="brand"><div class="logo">RF</div><h1>Retaforums</h1></div>
+  <div class="header-controls" id="headerControls">
+    <!-- injected -->
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- LEFT: profile & shop -->
+  <aside class="left">
+    <div class="card profile-card">
+      <img id="pp" src="" alt="PP"/>
+      <div class="display-name" id="displayName">Guest</div>
+      <div class="small" id="displayHandle">Not logged</div>
+      <div class="role-badge" id="roleBadge">Member</div>
+      <div class="small" id="repCount" style="margin-top:8px">Reputation: 0</div>
+
+      <div class="meta-grid" style="margin-top:12px">
+        <div><span class="small">Posts</span><strong id="metaPosts">0</strong></div>
+        <div><span class="small">Threads</span><strong id="metaThreads">0</strong></div>
+        <div><span class="small">Joined</span><strong id="metaJoined">—</strong></div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+        <label class="btn">Change PP<input id="ppFile" type="file" accept="image/*" style="display:none"></label>
+        <button class="btn ghost" id="btnEdit" style="display:none">Edit</button>
+        <button class="btn ghost" id="btnLogout" style="display:none">Logout</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="small">Shop (buy with reputation)</div>
+      <div class="shop-grid" id="shopGrid" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card small">
+      © 2025 Retaforums by <strong>jufitareta</strong>
+    </div>
+  </aside>
+
+  <!-- CENTER: thread & posts -->
+  <section class="center">
+    <!-- Thread header -->
+    <div class="card thread-hero">
+      <div style="width:120px;text-align:center">
+        <!-- optional banner avatar -->
+      </div>
+      <div class="thread-banner" style="flex:1">
+        <div class="title" id="threadTitle">6.7 million population data of Banten province by NYETLUPLUP</div>
+        <div class="meta" id="threadMeta">by <strong id="threadAuthor">NYETLUPLUP</strong> • <span id="threadTime">27-09-25, 10:49 AM</span></div>
+        <div class="code-table" id="threadTable">
+          <div style="display:flex;gap:12px;font-weight:700;color:#cfeff0">
+            <div style="width:80px">nomor</div><div style="width:180px">nik</div><div style="flex:1">nama</div><div style="flex:1">alamat</div><div style="width:160px">bidang_usaha</div><div style="width:120px">no_hp</div>
+          </div>
+          <div id="dataRows"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Posts area -->
+    <div id="postsArea"></div>
+
+    <!-- Reply card -->
+    <div class="card" id="replyCard" style="display:none;margin-top:12px">
+      <h4 style="margin:0 0 8px 0">Leave a Reply</h4>
+      <textarea id="replyText" rows="4" style="width:100%;background:transparent;border:1px dashed rgba(255,255,255,0.03);padding:8px;border-radius:8px;color:inherit"></textarea>
+      <div class="row" style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <input type="file" id="replyFile">
+        <button class="btn" id="btnReply">Send Reply</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: create thread, auth -->
+  <aside class="right">
+    <div class="card">
+      <h3 style="margin:0 0 8px 0">Create Thread</h3>
+      <input id="newTitle" placeholder="Thread title" style="background:transparent;border:1px dashed rgba(255,255,255,0.03);padding:8px;border-radius:8px;color:inherit"/>
+      <textarea id="newBody" rows="4" placeholder="Write your thread..." style="margin-top:8px;background:transparent;border:1px dashed rgba(255,255,255,0.03);padding:8px;border-radius:8px;color:inherit"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input type="file" id="newFile">
+        <button class="btn" id="btnCreateThread">Post Thread</button>
+      </div>
+    </div>
+
+    <div class="card" id="authCard" style="margin-top:12px">
+      <h3 style="margin:0 0 8px 0">Account</h3>
+      <input id="authUser" placeholder="username" style="background:transparent;border:1px dashed rgba(255,255,255,0.03);padding:8px;border-radius:8px;color:inherit"/>
+      <input id="authPass" type="password" placeholder="password" style="margin-top:8px;background:transparent;border:1px dashed rgba(255,255,255,0.03);padding:8px;border-radius:8px;color:inherit"/>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn" id="btnRegister">Register</button>
+        <button class="btn ghost" id="btnLogin">Login</button>
+      </div>
+      <div class="small" style="margin-top:8px">Accounts stored locally. For public forum use a backend.</div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h4 style="margin:0 0 8px 0">Ranks</h4>
+      <div class="small">Member: 0+ pts • MVP: 100+ • Pro: 300+ • God: 1000+</div>
+    </div>
+  </aside>
+</div>
+
+<div class="footer">Built for community & education — use responsibly</div>
+
+<!-- Modal -->
+<div id="modal" class="modal" style="display:none">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><strong id="modalTitle">Thread</strong><div class="small" id="modalSub"></div></div>
+      <div><button class="btn ghost" id="modalClose">Close</button></div>
+    </div>
+    <hr/>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* Retaforums - full client-side forum single html
+   Data keys:
+     rf_users   : { username: { password, displayName, photo(dataURL), points, awardsReceived, items, createdAt } }
+     rf_threads : [ { id, title, body, author, createdAt, file, dataRowsHTML, awards, posts: [ {id, author, body, file, createdAt, awards} ] } ]
+     rf_current : username
+*/
+
+// Utilities
+const $ = id => document.getElementById(id);
+const nowISO = ()=> new Date().toISOString();
+const nowHuman = ()=> new Date().toLocaleString();
+const uid = ()=> Math.floor(Math.random()*1e9).toString(36);
+const esc = s => s ? (''+s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) : '';
+
+// Storage helpers
+function load(key, def){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):def; }catch(e){return def} }
+function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+// Data init
+let users = load('rf_users', {});
+let threads = load('rf_threads', []);
+let current = localStorage.getItem('rf_current') || null;
+
+// Seed thread like screenshot if empty
+if(threads.length===0){
+  const sample = [
+    {nomor:'91470', nik:'3601190107750024', nama:'ENTONG SUPRIYADI', alamat:'KAMPUNG NAGROG DESA BAYUMUNDU', bidang:'WIRASWASTA', hp:'081234567890'},
+    {nomor:'91471', nik:'3601190107750025', nama:'SITI AMALIA', alamat:'KELURAHAN A', bidang:'PEGAWAI', hp:'081298765432'}
+  ];
+  const rows = sample.map(r=>`<div style="display:flex;gap:12px;padding:8px 0;border-top:1px dashed rgba(255,255,255,0.02)"><div style="width:80px">${esc(r.nomor)}</div><div style="width:180px">${esc(r.nik)}</div><div style="flex:1">${esc(r.nama)}</div><div style="flex:1">${esc(r.alamat)}</div><div style="width:160px">${esc(r.bidang)}</div><div style="width:120px">${esc(r.hp)}</div></div>`).join('');
+  threads.push({
+    id: uid(), title: '6.7 million population data of Banten province by NYETLUPLUP', author:'NYETLUPLUP',
+    createdAt: nowISO(), dataRowsHTML: rows, file:'', awards:0, posts: []
+  });
+  save('rf_threads', threads);
+}
+
+// Shop items
+const shop = [
+  {id:'badge1', title:'Custom Badge', desc:'Small badge for profile', price:50},
+  {id:'vip', title:'VIP Title', desc:'Display VIP in profile', price:200},
+  {id:'frame', title:'Gold Frame', desc:'Decorative avatar frame', price:120}
+];
+
+// Rank function
+function rankFor(points){
+  if(points >= 1000) return {name:'God', stars:5};
+  if(points >= 300) return {name:'Pro', stars:4};
+  if(points >= 100) return {name:'MVP', stars:3};
+  return {name:'Member', stars:1};
+}
+
+// RENDER: header auth controls
+function renderHeaderControls(){
+  const hc = $('headerControls');
+  hc.innerHTML = '';
+  const span = document.createElement('div');
+  span.className='small';
+  if(current && users[current]){
+    span.innerHTML = `<strong>${esc(users[current].displayName||current)}</strong> • <span class="small">${rankFor(users[current].points||0).name}</span>`;
+    hc.appendChild(span);
+    const btn1 = document.createElement('button'); btn1.className='btn ghost'; btn1.textContent='Profile'; btn1.onclick=()=> openProfile();
+    const btn2 = document.createElement('button'); btn2.className='btn'; btn2.textContent='Logout'; btn2.onclick=()=> logout();
+    hc.appendChild(btn1); hc.appendChild(btn2);
+  } else {
+    // show small login fields
+    const inputU = document.createElement('input'); inputU.id='hUser'; inputU.placeholder='username'; inputU.style.cssText='background:transparent;border:1px dashed rgba(255,255,255,0.03);padding:6px;border-radius:6px;color:inherit;margin-right:6px';
+    const inputP = document.createElement('input'); inputP.id='hPass'; inputP.type='password'; inputP.placeholder='password'; inputP.style.cssText='background:transparent;border:1px dashed rgba(255,255,255,0.03);padding:6px;border-radius:6px;color:inherit;margin-right:6px';
+    const btnLogin = document.createElement('button'); btnLogin.className='btn'; btnLogin.textContent='Login'; btnLogin.onclick=()=> headerLogin();
+    const btnReg = document.createElement('button'); btnReg.className='btn ghost'; btnReg.textContent='Register'; btnReg.onclick=()=> headerRegister();
+    hc.appendChild(inputU); hc.appendChild(inputP); hc.appendChild(btnLogin); hc.appendChild(btnReg);
+  }
+}
+
+// Header login/register functions
+function headerLogin(){
+  const u = $('hUser').value.trim(); const p = $('hPass').value;
+  if(!u||!p) return alert('Isi username & password');
+  if(!users[u]) return alert('User tidak ditemukan');
+  if(users[u].password !== p) return alert('Password salah');
+  current = u; localStorage.setItem('rf_current', current); renderAll();
+}
+function headerRegister(){
+  const u = prompt('Pilih username (no spaces):'); if(!u) return;
+  if(users[u]) return alert('Username sudah ada');
+  const p = prompt('Password:'); if(!p) return;
+  users[u] = {password:p, displayName:u, photo:'', points:0, awardsReceived:0, items:[], createdAt: nowISO()};
+  save('rf_users', users);
+  alert('Registrasi sukses. Silakan login dari header.');
+  renderAll();
+}
+
+// PROFILE
+function openProfile(){
+  if(!current) return alert('Login dulu');
+  const u = users[current];
+  const name = prompt('Display name:', u.displayName||current);
+  if(name!==null){ u.displayName = name.trim() || u.displayName; save('rf_users', users); renderAll(); }
+}
+
+// LOGOUT
+function logout(){ current = null; localStorage.removeItem('rf_current'); renderAll(); }
+
+// Render left profile block & shop
+function renderLeft(){
+  if(current && users[current]){
+    const u = users[current];
+    $('displayName').textContent = u.displayName || current;
+    $('displayHandle').textContent = current;
+    $('roleBadge').textContent = rankFor(u.points||0).name;
+    $('repCount').textContent = 'Reputation: ' + (u.points||0);
+    $('pp').src = u.photo || '';
+    $('metaPosts').textContent = countUserPosts(current);
+    $('metaThreads').textContent = countUserThreads(current);
+    $('metaJoined').textContent = (new Date(u.createdAt)).toLocaleDateString();
+    $('btnEdit').style.display = 'inline-block'; $('btnLogout').style.display='inline-block';
+    $('btnEdit').onclick = ()=> openProfile();
+    $('btnLogout').onclick = ()=> logout();
+  } else {
+    $('displayName').textContent = 'Guest'; $('displayHandle').textContent = 'Not logged';
+    $('roleBadge').textContent = 'Member'; $('repCount').textContent='Reputation: 0'; $('pp').src='';
+    $('metaPosts').textContent = 0; $('metaThreads').textContent = threads.length; $('metaJoined').textContent = '—';
+    $('btnEdit').style.display = 'none'; $('btnLogout').style.display='none';
+  }
+  // shop
+  const sg = $('shopGrid'); sg.innerHTML = '';
+  shop.forEach(it=>{
+    const node = document.createElement('div'); node.className='shop-item';
+    node.innerHTML = `<div style="font-weight:800">${esc(it.title)}</div><div class="small">${esc(it.desc)}</div><div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center"><div style="font-weight:800;color:var(--accent)">${it.price} pts</div><button class="btn" onclick="buy('${it.id}')">Buy</button></div>`;
+    sg.appendChild(node);
+  });
+}
+
+// Counts helpers
+function countUserPosts(username){
+  let c=0; threads.forEach(t=>{ if(t.author===username) c++; (t.posts||[]).forEach(p=>{ if(p.author===username) c++; })}); return c;
+}
+function countUserThreads(username){ return threads.filter(t=>t.author===username).length; }
+
+// Render center thread & posts
+function renderCenter(){
+  const t = threads[0];
+  $('threadTitle').textContent = t.title;
+  $('threadAuthor').textContent = t.author;
+  $('threadTime').textContent = (new Date(t.createdAt)).toLocaleString();
+  $('dataRows').innerHTML = t.dataRowsHTML || '';
+  renderPosts();
+}
+
+// Render posts
+function renderPosts(){
+  const t = threads[0];
+  const area = $('postsArea'); area.innerHTML = '';
+  // Original post styled
+  const op = document.createElement('div'); op.className='post';
+  const author = users[t.author] || {displayName:t.author, photo:''};
+  op.innerHTML = `<div class="avatar"><img src="${author.photo||''}" alt=""></div>
+    <div class="content">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>${esc(author.displayName||t.author)}</strong><div class="meta small">${new Date(t.createdAt).toLocaleString()}</div></div>
+        <div><span class="small">Awards: ${t.awards||0}</span></div>
+      </div>
+      <div style="margin-top:8px" class="small">${esc(t.title)}</div>
+      <div class="code-table" style="margin-top:8px">${t.dataRowsHTML}</div>
+      <div class="actions"><button class="btn ghost" onclick="viewOriginal()">View Full</button> <button class="award-btn" onclick="awardThread('${t.id}')">Give Award</button></div>
+    </div>`;
+  area.appendChild(op);
+  // Replies
+  (t.posts||[]).forEach(p=>{
+    const a = users[p.author] || {displayName:p.author, photo:''};
+    const node = document.createElement('div'); node.className='post';
+    node.innerHTML = `<div class="avatar"><img src="${a.photo||''}" alt=""></div>
+      <div class="content">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>${esc(a.displayName||p.author)}</strong><div class="meta small">${new Date(p.createdAt).toLocaleString()}</div></div>
+          <div><span class="small">Awards: ${p.awards||0}</span></div>
+        </div>
+        <div style="margin-top:8px">${esc(p.body)}</div>
+        ${p.file?`<div class="file-link small"><a href="${p.file}" target="_blank">Attachment</a></div>`:''}
+        <div class="actions"><button class="btn ghost" onclick="viewPost('${p.id}')">Open</button> <button class="award-btn" onclick="awardPost('${t.id}','${p.id}')">Give Award</button></div>
+      </div>`;
+    area.appendChild(node);
+  });
+}
+
+// View functions
+function viewOriginal(){ openModal('op'); }
+function viewPost(pid){ openModal(pid); }
+
+// Modal
+function openModal(key){
+  const m = $('modal'); const body = $('modalBody'); const title = $('modalTitle'); const sub = $('modalSub');
+  if(key==='op'){ const t=threads[0]; title.textContent = t.title; sub.textContent = `by ${t.author}`; body.innerHTML = `<div class="small">${t.dataRowsHTML}</div>`; }
+  else {
+    const t = threads[0]; const p = (t.posts||[]).find(x=>x.id===key);
+    if(!p) { title.textContent='Not found'; body.innerHTML=''; sub.textContent=''; }
+    else { title.textContent = `Post by ${p.author}`; sub.textContent = new Date(p.createdAt).toLocaleString(); body.innerHTML = `<div>${esc(p.body)}</div>${p.file?`<div class="file-link small"><a href="${p.file}" target="_blank">Attachment</a></div>`:''}`; }
+  }
+  m.style.display='flex';
+}
+$('modalClose').onclick = ()=> $('modal').style.display='none';
+window.addEventListener('click', e=> { if(e.target=== $('modal')) $('modal').style.display='none'; });
+
+// Reply send
+$('btnReply').onclick = async ()=>{
+  if(!current) return alert('Login dulu');
+  const text = $('replyText').value.trim(); if(!text) return alert('Isi balasan');
+  let fileData = '';
+  const f = $('replyFile').files[0];
+  if(f){ if(f.size>6*1024*1024) return alert('Max 6MB'); fileData = await toDataURL(f); }
+  const post = {id:uid(), author:current, body:text, file:fileData, createdAt:nowISO(), awards:0};
+  threads[0].posts.push(post);
+  save('rf_threads', threads);
+  $('replyText').value=''; $('replyFile').value='';
+  renderPosts(); renderLeft(); save('rf_threads', threads);
+};
+
+// Award functions
+function awardThread(tid){
+  if(!current) return alert('Login dulu');
+  const t = threads.find(x=>x.id===tid); if(!t) return;
+  if(t.author === current) return alert('Tidak bisa memberi award ke thread sendiri');
+  t.awards = (t.awards||0)+1;
+  users[t.author].points = (users[t.author].points||0)+10;
+  users[t.author].awardsReceived = (users[t.author].awardsReceived||0)+1;
+  save('rf_threads', threads); save('rf_users', users); renderPosts(); renderLeft();
+}
+function awardPost(tid,pid){
+  if(!current) return alert('Login dulu');
+  const t = threads.find(x=>x.id===tid); if(!t) return;
+  const p = (t.posts||[]).find(x=>x.id===pid); if(!p) return;
+  if(p.author === current) return alert('Tidak bisa memberi award ke postingan sendiri');
+  p.awards = (p.awards||0)+1;
+  users[p.author].points = (users[p.author].points||0)+10;
+  users[p.author].awardsReceived = (users[p.author].awardsReceived||0)+1;
+  save('rf_threads', threads); save('rf_users', users); renderPosts(); renderLeft();
+}
+
+// Create thread
+$('btnCreateThread').onclick = async ()=>{
+  if(!current) return alert('Login dulu');
+  const title = $('newTitle').value.trim(); const body = $('newBody').value.trim();
+  if(!title || !body) return alert('Isi judul & isi');
+  let fileData = ''; const f = $('newFile').files[0];
+  if(f){ if(f.size>8*1024*1024) return alert('Max 8MB'); fileData = await toDataURL(f); }
+  // create dataRows if body contains CSV-like table? For demo, we keep body
+  const t = {id:uid(), title, body, author:current, createdAt:nowISO(), dataRowsHTML: `<div style="padding:8px 0">${esc(body)}</div>`, file:fileData, awards:0, posts:[]};
+  threads.unshift(t); save('rf_threads', threads);
+  $('newTitle').value=''; $('newBody').value=''; $('newFile').value='';
+  renderCenter(); renderLeft();
+};
+
+// Auth: register/login
+$('btnRegister').onclick = ()=> {
+  const u = $('authUser').value.trim(); const p = $('authPass').value;
+  if(!u||!p) return alert('Isi username & password');
+  if(users[u]) return alert('Username sudah ada');
+  users[u] = {password:p, displayName:u, photo:'', points:0, awardsReceived:0, items:[], createdAt: nowISO()};
+  save('rf_users', users);
+  alert('Registrasi sukses. Silakan login.');
+  $('authUser').value=''; $('authPass').value='';
+  renderLeft();
+};
+$('btnLogin').onclick = ()=> {
+  const u = $('authUser').value.trim(); const p = $('authPass').value;
+  if(!u||!p) return alert('Isi username & password');
+  if(!users[u]) return alert('User tidak ditemukan');
+  if(users[u].password !== p) return alert('Password salah');
+  current = u; localStorage.setItem('rf_current', current);
+  $('authUser').value=''; $('authPass').value='';
+  $('replyCard').style.display='block';
+  renderAll();
+};
+
+// Buy shop item
+function buy(id){
+  if(!current) return alert('Login dulu');
+  const it = shop.find(s=>s.id===id); if(!it) return;
+  if((users[current].points||0) < it.price) return alert('Reputation tidak cukup');
+  users[current].points -= it.price;
+  users[current].items = users[current].items || [];
+  users[current].items.push(it.id);
+  save('rf_users', users); renderLeft(); alert('Purchased: '+it.title);
+}
+
+// PP upload
+$('ppFile').addEventListener('change', async (e)=>{
+  if(!current) return alert('Login dulu');
+  const f = e.target.files[0]; if(!f) return;
+  if(f.size > 4*1024*1024) return alert('Max 4MB');
+  const data = await toDataURL(f);
+  users[current].photo = data; save('rf_users', users); renderLeft();
+});
+
+// util: file -> dataURL
+function toDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+
+// initial UI state
+if(current) $('replyCard').style.display='block'; else $('replyCard').style.display='none';
+
+// initial render
+function renderAll(){ renderHeaderControls(); renderLeft(); renderCenter(); }
+renderAll();
+
+// expose some functions for debugging
+window.registerLocal = (u,p)=>{ if(!u||!p) return; users[u]={password:p,displayName:u,photo:'',points:0,awardsReceived:0,items:[],createdAt:nowISO()}; save('rf_users', users); alert('ok'); renderAll(); }
+window.loginLocal = (u,p)=>{ if(!u||!p) return; if(users[u]&&users[u].password===p){ current=u; localStorage.setItem('rf_current',current); renderAll(); } else alert('fail'); }
+
+</script>
+</body>
+</html>
